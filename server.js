@@ -116,7 +116,12 @@ gracefullyShutdown(server).upon('SIGINT SIGTERM').on('shutting-down', function()
   console.log('server#close() has been called');
 });
 
-server.listen(9009, '127.0.0.1');
+app.set('port', (process.env.PORT || 9000));
+app.listen(app.get('port'), function() {
+  console.log("Node app is running at localhost:" + app.get('port'));
+});
+//server.listen(9009, '127.0.0.1');
+//console.log('Server running at http://127.0.0.1:9009/');
 
 // Hacky way of starting a simple webserver (don't use)
 /*
@@ -125,8 +130,6 @@ server.createServer(function (req, res) {
   res.end('Hello World\n');
 }).listen(9001, '127.0.0.1');
 //*/
-
-console.log('Server running at http://127.0.0.1:9009/');
 
 // Test to ensure we logged in correctly
 //t.get("/1/members/me", function(err, data) {
