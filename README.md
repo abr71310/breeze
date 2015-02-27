@@ -5,6 +5,7 @@ There are only 6 indexes - 1-6 to play with.
 
 Endpoints:
 - GET: /users/:userid/ - fetches the DB entry for the ID :userid
+- GET: /users/:userid/history - fetches the user's transactional history
 - POST: /users/:userid/ - queries look for 'item_type' and 'amount' 
 
 SOONTM

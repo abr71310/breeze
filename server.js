@@ -52,9 +52,9 @@ app.get('/users/:userid', function (req, res) {
 // get history for a user
 app.get('/users/:userid/history', function (req, res) {
   console.log("Here is some historical user data");
-  var down = history.get(req.params.userid);
-  console.log(down);
-  res.send(down);
+  var user = history.get(req.params.userid);
+  console.log(user);
+  res.send(user);
 });
 
 // accept POST request on the /users/user_id/items
@@ -65,24 +65,30 @@ app.post('/users/:userid/items', urlencodedParser, function (req, res) {
   var trans = req.body.item_type;
   //console.log(trans);
   var amt = parseInt(req.body.amount);
+  if (isNaN(amt)) { // don't let crappy data screw us
+    amt = 0; 
+  }
   var id = req.params.userid;
   var user = users.get(req.params.userid); // grabs the user based on the param set
-  console.log(user);
+  //console.log(user);
   var hist = history.get(req.params.userid);
   //console.log(hist.transactions);
   var name;
-  if (trans == "earning") {
+  if (trans == "earning" && amt > 0) {
     user.balance = user.balance + amt;
-    //hist.transactions.push
-  } else if (trans == "fee") {
+    hist.transactions.push(Date.now() + ": Earning: +$" + amt);
+  } else if (trans == "fee" && amt > 0) {
     user.balance = user.balance - amt;
+    hist.transactions.push(Date.now() + ": Fee: -$" + amt);
   }
+  hist.total = user.balance;
   users.update(user);
+  console.log(hist);
   if (user.threshold == false && user.balance <= -200) {
     user.threshold = true; // set threshold to true, since they broke it, but weren't in that state prior
     name = user.name + " " + user.balance; // creates name w/ balance to create card with
-    console.log(user.card);
-    console.log(user.card == "");
+    //console.log(user.card);
+    //console.log(user.card == "");
     if (user.card == "") { // create a new card!
       // create a trello card, associate with account. (if it doesn't already exist)
       t.post("/1/cards", { name: name, due: "null", idList: "54ee82fe28c214334d9e10ec" }, function(err, data) {
@@ -128,7 +134,7 @@ app.post('/users/:userid/items', urlencodedParser, function (req, res) {
     });
   }
   
-  console.log(user.balance); // amount
+  //console.log(user.balance); // amount
   //console.log(user);
 
   res.send('POST request received!');
