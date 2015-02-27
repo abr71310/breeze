@@ -27,7 +27,7 @@ var felix = users.insert( { userid : '6', name : 'Felix H.', balance: 0, thresho
 
 // accept GET request
 app.get('/', function (req, res) {
-  res.send('Users 1-6 are already created. Use (<stuff>=)/users/:userid/ to access, or post to <stuff>/items with transaction type \n');
+  res.send('Users 1-6 are already created. Use (stuff=)/users/:userid/ to access, or post to (stuff)/items with transaction type \n');
 })
 
 // get data on a user
