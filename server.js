@@ -4,6 +4,7 @@ var app = express();
 var server = require('http').createServer(app);
 var bodyParser = require('body-parser');
 var loki = require('lokijs');
+var gracefullyShutdown = require('graceful-shutdown');
 
 var Trello = require("node-trello");
 var t = new Trello("4b2c1c5260bf14784b6b50639cc5a698", "b4f8a52fefd56567f03f2ca890a8f0a3e6fa7fb23cfc8613b3398669e26d7e1d");
@@ -28,7 +29,7 @@ var felix = users.insert( { userid : '6', name : 'Felix H.', balance: 0, thresho
 // accept GET request
 app.get('/', function (req, res) {
   res.send('Users 1-6 are already created. Use (stuff=)/users/:userid/ to access, or post to (stuff)/items with transaction type \n');
-})
+});
 
 // get data on a user
 app.get('/users/:userid', function (req, res) {
@@ -109,9 +110,13 @@ app.post('/users/:userid/items', urlencodedParser, function (req, res) {
   //console.log(user);
 
   res.send('POST request received!');
-})
+});
 
-server.listen(9001, '127.0.0.1');
+gracefullyShutdown(server).upon('SIGINT SIGTERM').on('shutting-down', function() {
+  console.log('server#close() has been called');
+});
+
+server.listen(9009, '127.0.0.1');
 
 // Hacky way of starting a simple webserver (don't use)
 /*
@@ -121,7 +126,7 @@ server.createServer(function (req, res) {
 }).listen(9001, '127.0.0.1');
 //*/
 
-console.log('Server running at http://127.0.0.1:9001/');
+console.log('Server running at http://127.0.0.1:9009/');
 
 // Test to ensure we logged in correctly
 //t.get("/1/members/me", function(err, data) {
