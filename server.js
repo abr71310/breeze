@@ -4,7 +4,7 @@ var app = express();
 var server = require('http').createServer(app);
 var bodyParser = require('body-parser');
 var loki = require('lokijs');
-//var gracefullyShutdown = require('graceful-shutdown');
+var gracefullyShutdown = require('graceful-shutdown');
 
 var Trello = require("node-trello");
 var t = new Trello("4b2c1c5260bf14784b6b50639cc5a698", "b4f8a52fefd56567f03f2ca890a8f0a3e6fa7fb23cfc8613b3398669e26d7e1d");
@@ -63,7 +63,7 @@ app.post('/users/:userid/items', urlencodedParser, function (req, res) {
   //console.log(req.body); // x-www-form-urlencoded
   //console.log(req.body.item_type); // item type
   var trans = req.body.item_type;
-  console.log(trans);
+  //console.log(trans);
   var amt = parseInt(req.body.amount);
   var id = req.params.userid;
   var user = users.get(req.params.userid); // grabs the user based on the param set
@@ -134,18 +134,18 @@ app.post('/users/:userid/items', urlencodedParser, function (req, res) {
   res.send('POST request received!');
 });
 
-/*gracefullyShutdown(server).upon('SIGINT SIGTERM').on('shutting-down', function() {
+gracefullyShutdown(server).upon('SIGINT SIGTERM').on('shutting-down', function() {
   console.log('server#close() has been called');
 });
 //*/
 
-//app.set('port', (process.env.PORT || 9000));
-/*app.listen(app.get('port'), function() {
+app.set('port', (process.env.PORT || 9000));
+app.listen(app.get('port'), function() {
   console.log("Node app is running at localhost:" + app.get('port'));
 });
 //*/
-server.listen(9010, '127.0.0.1');
-console.log('Server running at http://127.0.0.1:9010/');
+//server.listen(9010, '127.0.0.1');
+//console.log('Server running at http://127.0.0.1:9010/');
 
 // Hacky way of starting a simple webserver (don't use)
 /*
