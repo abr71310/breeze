@@ -4,27 +4,37 @@ var app = express();
 var server = require('http').createServer(app);
 var bodyParser = require('body-parser');
 var loki = require('lokijs');
-var gracefullyShutdown = require('graceful-shutdown');
+//var gracefullyShutdown = require('graceful-shutdown');
 
 var Trello = require("node-trello");
 var t = new Trello("4b2c1c5260bf14784b6b50639cc5a698", "b4f8a52fefd56567f03f2ca890a8f0a3e6fa7fb23cfc8613b3398669e26d7e1d");
 
 // create application/json parser
-var jsonParser = bodyParser.json()
+var jsonParser = bodyParser.json();
 
 // create application/x-www-form-urlencoded parser
-var urlencodedParser = bodyParser.urlencoded({ extended: false })
+var urlencodedParser = bodyParser.urlencoded({ extended: false });
 
 var db = new loki("Mock DB");
 
 var users = db.addCollection('users');
+var history = db.addCollection('history');
 
+// Users
 var alex = users.insert( { userid: '1', name : 'Alex B.', balance: 0, threshold: false, card: "" } );
 var brandon = users.insert( { userid : '2', name : 'Brandon Z.', balance: 0, threshold: false, card: "" } );
 var charlie = users.insert( { userid : '3', name : 'Charlie K.', balance: 0, threshold: false, card: "" } );
 var david = users.insert( { userid : '4', name : 'David Q.', balance: 0, threshold: false, card: "" } );
 var edward = users.insert( { userid : '5', name : 'Edward L.', balance: 0, threshold: false, card: "" } );
 var felix = users.insert( { userid : '6', name : 'Felix H.', balance: 0, threshold: false, card: "" } );
+
+// Historical Data (per UserID)
+var h1 = history.insert( { userid : "1", transactions : [], total: 0 } );
+var h2 = history.insert( { userid : "2", transactions : [], total: 0 } );
+var h3 = history.insert( { userid : "3", transactions : [], total: 0 } );
+var h4 = history.insert( { userid : "4", transactions : [], total: 0 } );
+var h5 = history.insert( { userid : "5", transactions : [], total: 0 } );
+var h6 = history.insert( { userid : "6", transactions : [], total: 0 } );
 
 // accept GET request
 app.get('/', function (req, res) {
@@ -39,23 +49,35 @@ app.get('/users/:userid', function (req, res) {
   res.send(down);
 });
 
+// get history for a user
+app.get('/users/:userid/history', function (req, res) {
+  console.log("Here is some historical user data");
+  var down = history.get(req.params.userid);
+  console.log(down);
+  res.send(down);
+});
+
 // accept POST request on the /users/user_id/items
 app.post('/users/:userid/items', urlencodedParser, function (req, res) {
   //console.log(req.params); // all params
   //console.log(req.body); // x-www-form-urlencoded
-  console.log(req.body.item_type); // item type
+  //console.log(req.body.item_type); // item type
   var trans = req.body.item_type;
+  console.log(trans);
   var amt = parseInt(req.body.amount);
   var id = req.params.userid;
   var user = users.get(req.params.userid); // grabs the user based on the param set
+  console.log(user);
+  var hist = history.get(req.params.userid);
+  //console.log(hist.transactions);
   var name;
-  if (trans == 'earning') {
+  if (trans == "earning") {
     user.balance = user.balance + amt;
-  } else if (trans == 'fee') {
+    //hist.transactions.push
+  } else if (trans == "fee") {
     user.balance = user.balance - amt;
   }
   users.update(user);
-  console.log(user);
   if (user.threshold == false && user.balance <= -200) {
     user.threshold = true; // set threshold to true, since they broke it, but weren't in that state prior
     name = user.name + " " + user.balance; // creates name w/ balance to create card with
@@ -112,16 +134,18 @@ app.post('/users/:userid/items', urlencodedParser, function (req, res) {
   res.send('POST request received!');
 });
 
-gracefullyShutdown(server).upon('SIGINT SIGTERM').on('shutting-down', function() {
+/*gracefullyShutdown(server).upon('SIGINT SIGTERM').on('shutting-down', function() {
   console.log('server#close() has been called');
 });
+//*/
 
-app.set('port', (process.env.PORT || 9000));
-app.listen(app.get('port'), function() {
+//app.set('port', (process.env.PORT || 9000));
+/*app.listen(app.get('port'), function() {
   console.log("Node app is running at localhost:" + app.get('port'));
 });
-//server.listen(9009, '127.0.0.1');
-//console.log('Server running at http://127.0.0.1:9009/');
+//*/
+server.listen(9010, '127.0.0.1');
+console.log('Server running at http://127.0.0.1:9010/');
 
 // Hacky way of starting a simple webserver (don't use)
 /*
